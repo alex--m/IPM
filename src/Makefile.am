@@ -1,5 +1,5 @@
 
-AM_CPPFLAGS = -I$(top_srcdir)/include
+AM_CPPFLAGS = -I$(top_srcdir)/include -I/usr/include/python2.7
 
 ##############################################################################
 
@@ -185,6 +185,7 @@ ALL_MODULES_DIST = 	\
 
 if ENABLE_MPI
   AM_CFLAGS+=-DHAVE_MPI
+  AM_LDFLAGS=-lpython2.7 -lm -L/usr/lib/python2.7/config
   IPMFILES_MODULES += $(MPI_MODULE_DIST)
   IPMFILES_MODULES_F += $(MPI_MODULE_DIST_F)
   IPMFILES_MODULES_NODIST += $(MPI_MODULE_NODIST) 

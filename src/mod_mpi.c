@@ -8,14 +8,20 @@
 #include "ipm_modules.h"
 #include "GEN.calltable_mpi.h"
 
+#define PYTHON_CB_FILENAME "mpi_cb.py"
+#define PYTHON_CB_FUNCNAME "ipm_mpi_callback"
+
 char* ipm_mpi_op[MAXNUM_MPI_OPS];
 char* ipm_mpi_type[MAXNUM_MPI_TYPES];
 
 MPI_Group ipm_world_group;
 
+PyObject *python_cb_f;
+
+int mod_mpi_python_init();
+int mod_mpi_python_finalize();
 int mod_mpi_xml(ipm_mod_t* mod, void *ptr, struct region *reg);
 int mod_mpi_region(ipm_mod_t*mod, int op, struct region *reg);
-
 
 int mod_mpi_init(ipm_mod_t* mod, int flags)
 {
@@ -97,6 +103,7 @@ int mod_mpi_init(ipm_mod_t* mod, int flags)
   ipm_mpi_type[IPM_MPI_2COMPLEX]  = "MPI_2COMPLEX";
   ipm_mpi_type[IPM_MPI_2DOUBLE_COMPLEX] = "MPI_2DOUBLE_COMPLEX";
 
+  mod_mpi_python_init();
   mod->state    = STATE_ACTIVE;
   return IPM_OK;
 }
@@ -134,6 +141,7 @@ int mod_mpi_output(ipm_mod_t* mod, int oflags)
 
 int mod_mpi_finalize(ipm_mod_t* mod, int flags)
 {
+  mod_mpi_python_finalize();
   return IPM_OK;
 }
 
@@ -185,5 +193,36 @@ int mod_mpi_region(ipm_mod_t *mod, int op, struct region *reg)
       break;
   }
 
+  return 0;
+}
+
+
+int mod_mpi_python_init()
+{
+  PyObject *main_module;
+  PyObject *global_dict;
+  PyObject *expression;
+
+  /* Open the Python callback file */
+  FILE* callback_file = fopen(PYTHON_CB_FILENAME, "r");
+  if (callback_file == NULL) {
+      return -1;
+  }
+
+  /* Start Python and run the file */
+  Py_Initialize();
+  PyRun_SimpleFile(callback_file, PYTHON_CB_FILENAME);
+
+  /* Find the callback function */
+  main_module = PyImport_AddModule("__main__");
+  global_dict = PyModule_GetDict(main_module);
+  python_cb_f = PyDict_GetItemString(global_dict,
+          PYTHON_CB_FUNCNAME);
+  return 0;
+}
+
+int mod_mpi_python_finalize()
+{
+  Py_Finalize();
   return 0;
 }

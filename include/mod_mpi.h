@@ -3,6 +3,7 @@
 #define MOD_MPI_H_INCLUDED
 
 #include <mpi.h>
+#include <Python.h>
 #include "ipm_modules.h"
 
 int mod_mpi_init(ipm_mod_t* mod, int flags);
@@ -24,6 +25,7 @@ typedef struct mpidata
 } mpidata_t;
 
 extern MPI_Group ipm_world_group;
+extern PyObject *python_cb_f;
 
 #define IPM_MPI_MAP_RANK(rank_out_, rank_in_, comm_) \
   do { \

@@ -148,6 +148,12 @@ void IPM___CFNAME__(__CPARAMS__, double tstart, double tstop)
 
   IPM_HASHTABLE_ADD(idx,t);
  
+#if 1
+  if (++ipm_htable[idx].count % 1000000 == 0) {
+      PyObject_CallFunction(python_cb_f, "kkdd", idx, ipm_htable[idx].count, ipm_htable[idx].t_tot, t);
+  }
+#endif
+
 #ifdef HAVE_SNAP
  IPM_SNAP;
 #endif
